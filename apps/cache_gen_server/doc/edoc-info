@@ -1,0 +1,3 @@
+%% encoding: UTF-8
+{application,cache_gen_server}.
+{modules,[cache_gen_server,cache_gen_server_app,cache_gen_server_sup]}.

@@ -1,1 +1,9 @@
-# cache_gen_server
+cache_gen_server
+=====
+
+An OTP application
+
+Build
+-----
+
+    $ rebar3 compile
