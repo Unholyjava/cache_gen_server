@@ -10,6 +10,16 @@
 -export([start/2, stop/1]).
 
 start(_StartType, _StartArgs) ->
+    Port = 8080,
+    Dispatch = cowboy_router:compile([
+        {'_', [
+            {"/api/cache_server", data_handler, []}
+        ]}
+    ]),
+    {ok, _} = cowboy:start_clear(http, [{port, Port}], #{
+        env => #{dispatch => Dispatch}
+    }),
+
     case cache_gen_server_sup:start_link() of
         {ok, Pid} ->
             {ok, Pid};
@@ -18,6 +28,6 @@ start(_StartType, _StartArgs) ->
     end.
 
 stop(_State) ->
-    ok.
+    ok = cowboy:stop_listener(http).
 
 %% internal functions

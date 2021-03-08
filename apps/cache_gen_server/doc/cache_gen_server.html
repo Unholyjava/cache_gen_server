@@ -19,33 +19,26 @@
 <h2><a name="description">Description</a></h2>
   
 <h2><a name="index">Function Index</a></h2>
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#create-1">create/1</a></td><td></td></tr>
-<tr><td valign="top"><a href="#delete_item-2">delete_item/2</a></td><td></td></tr>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#delete_item-1">delete_item/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#delete_obsolete-0">delete_obsolete/0</a></td><td></td></tr>
-<tr><td valign="top"><a href="#delete_per_time-1">delete_per_time/1</a></td><td></td></tr>
-<tr><td valign="top"><a href="#delete_periodic-2">delete_periodic/2</a></td><td></td></tr>
+<tr><td valign="top"><a href="#delete_per_time-0">delete_per_time/0</a></td><td></td></tr>
+<tr><td valign="top"><a href="#delete_periodic-1">delete_periodic/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#handle_call-3">handle_call/3</a></td><td></td></tr>
 <tr><td valign="top"><a href="#handle_cast-2">handle_cast/2</a></td><td></td></tr>
 <tr><td valign="top"><a href="#handle_info-2">handle_info/2</a></td><td></td></tr>
 <tr><td valign="top"><a href="#init-1">init/1</a></td><td></td></tr>
-<tr><td valign="top"><a href="#insert-2">insert/2</a></td><td></td></tr>
-<tr><td valign="top"><a href="#show_items-2">show_items/2</a></td><td></td></tr>
+<tr><td valign="top"><a href="#insert-1">insert/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#show_items-1">show_items/1</a></td><td></td></tr>
 <tr><td valign="top"><a href="#start_link-0">start_link/0</a></td><td></td></tr>
-<tr><td valign="top"><a href="#stop-1">stop/1</a></td><td></td></tr>
+<tr><td valign="top"><a href="#stop-0">stop/0</a></td><td></td></tr>
 <tr><td valign="top"><a href="#terminate-2">terminate/2</a></td><td></td></tr>
 </table>
 
 <h2><a name="functions">Function Details</a></h2>
 
-<h3 class="function"><a name="create-1">create/1</a></h3>
+<h3 class="function"><a name="delete_item-1">delete_item/1</a></h3>
 <div class="spec">
-<p><tt>create(Pid) -&gt; any()</tt></p>
-<p> </p>
-</div>
-
-<h3 class="function"><a name="delete_item-2">delete_item/2</a></h3>
-<div class="spec">
-<p><tt>delete_item(Pid, Key) -&gt; any()</tt></p>
+<p><tt>delete_item(Key) -&gt; any()</tt></p>
 <p> </p>
 </div>
 
@@ -55,33 +48,33 @@
 <p> </p>
 </div>
 
-<h3 class="function"><a name="delete_per_time-1">delete_per_time/1</a></h3>
+<h3 class="function"><a name="delete_per_time-0">delete_per_time/0</a></h3>
 <div class="spec">
-<p><tt>delete_per_time(Pid) -&gt; any()</tt></p>
+<p><tt>delete_per_time() -&gt; any()</tt></p>
 <p> </p>
 </div>
 
-<h3 class="function"><a name="delete_periodic-2">delete_periodic/2</a></h3>
+<h3 class="function"><a name="delete_periodic-1">delete_periodic/1</a></h3>
 <div class="spec">
-<p><tt>delete_periodic(Pid, X2) -&gt; any()</tt></p>
+<p><tt>delete_periodic(X1) -&gt; any()</tt></p>
 <p> </p>
 </div>
 
 <h3 class="function"><a name="handle_call-3">handle_call/3</a></h3>
 <div class="spec">
-<p><tt>handle_call(X1, From, X3) -&gt; any()</tt></p>
+<p><tt>handle_call(Msg, From, State) -&gt; any()</tt></p>
 <p> </p>
 </div>
 
 <h3 class="function"><a name="handle_cast-2">handle_cast/2</a></h3>
 <div class="spec">
-<p><tt>handle_cast(X1, X2) -&gt; any()</tt></p>
+<p><tt>handle_cast(Msg, State) -&gt; any()</tt></p>
 <p> </p>
 </div>
 
 <h3 class="function"><a name="handle_info-2">handle_info/2</a></h3>
 <div class="spec">
-<p><tt>handle_info(Msg, X2) -&gt; any()</tt></p>
+<p><tt>handle_info(Msg, State) -&gt; any()</tt></p>
 <p> </p>
 </div>
 
@@ -91,15 +84,15 @@
 <p> </p>
 </div>
 
-<h3 class="function"><a name="insert-2">insert/2</a></h3>
+<h3 class="function"><a name="insert-1">insert/1</a></h3>
 <div class="spec">
-<p><tt>insert(Pid, Item) -&gt; any()</tt></p>
+<p><tt>insert(Item) -&gt; any()</tt></p>
 <p> </p>
 </div>
 
-<h3 class="function"><a name="show_items-2">show_items/2</a></h3>
+<h3 class="function"><a name="show_items-1">show_items/1</a></h3>
 <div class="spec">
-<p><tt>show_items(Pid, Key) -&gt; any()</tt></p>
+<p><tt>show_items(Key) -&gt; any()</tt></p>
 <p> </p>
 </div>
 
@@ -109,15 +102,15 @@
 <p> </p>
 </div>
 
-<h3 class="function"><a name="stop-1">stop/1</a></h3>
+<h3 class="function"><a name="stop-0">stop/0</a></h3>
 <div class="spec">
-<p><tt>stop(Pid) -&gt; any()</tt></p>
+<p><tt>stop() -&gt; any()</tt></p>
 <p> </p>
 </div>
 
 <h3 class="function"><a name="terminate-2">terminate/2</a></h3>
 <div class="spec">
-<p><tt>terminate(X1, X2) -&gt; any()</tt></p>
+<p><tt>terminate(X1, State) -&gt; any()</tt></p>
 <p> </p>
 </div>
 <hr>

@@ -13,93 +13,114 @@
 %% API
 -export([start_link/0, init/1, handle_call/3,
   handle_cast/2, handle_info/2, terminate/2,
-  insert/2, delete_item/2, delete_per_time/1, delete_periodic/2,
-  show_items/2, stop/1, create/1, delete_obsolete/0]).
+  insert/1, delete_item/1, delete_per_time/0, delete_periodic/1,
+  show_items/1, show_items_by_date/2, stop/0, delete_obsolete/0]).
 -include_lib("stdlib/include/ms_transform.hrl").
 
+
 start_link() ->
-  gen_server:start_link(?MODULE, [], []).
+  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
+  gen_server:cast(?MODULE, {create}),
   {ok, []}.
 
-create(Pid) ->
-  gen_server:call(Pid, {create}).
+insert(Item) ->
+  gen_server:call(?MODULE, {add, Item}).
 
-insert(Pid, Item) ->
-  gen_server:call(Pid, {add, Item}).
+delete_item(Key) ->
+  gen_server:call(?MODULE, {remove, Key}).
 
-delete_item(Pid, Key) ->
-  gen_server:call(Pid, {remove, Key}).
+delete_per_time() ->
+  gen_server:call(?MODULE, {remove_per_time}).
 
-delete_per_time(Pid) ->
-  gen_server:call(Pid, {remove_per_time}).
+delete_periodic({drop_interval, Drop_Interval}) ->
+  erlang:start_timer(Drop_Interval*1000, ?MODULE, drop_interval).
 
-delete_periodic(Pid, {drop_interval, Drop_Interval}) ->
-  gen_server:cast(Pid, {remove_periodic_per_time, Drop_Interval}).
+show_items(Key) ->
+  gen_server:call(?MODULE, {read, Key}).
 
-show_items(Pid, Key) ->
-  gen_server:call(Pid, {read, Key}).
+show_items_by_date(Date_from, Date_to) ->
+  gen_server:call(?MODULE, {read_by_date, {Date_from, Date_to}}).
 
-stop(Pid) ->
-  gen_server:call(Pid, terminate).
+stop() ->
+  gen_server:call(?MODULE, terminate).
 
-handle_call({create}, _From, []) ->
+handle_call({add, {Key, Value, T_Life}}, _From, State) ->
+  io:format("Adds ~p into table~n", [{Key, Value, T_Life}]),
+      ets:insert(table_cache, {Key, Value, T_Life, erlang:system_time(second)}),
+  {reply, ok, State};
+
+handle_call({remove, Key}, _From, State) ->
+  Reply =
+        case ets:lookup(table_cache, Key) of
+          [] -> {error, not_exist};
+          _Ani_Item -> ets:delete(table_cache, Key),
+            ok
+        end,
+  {reply, Reply, State};
+
+handle_call({remove_per_time}, _From, State) ->
+  delete_obsolete(),
+  {reply, ok, State};
+
+handle_call({read, Key}, _From, State) ->
+  io:format("Read table, key: ~p~n", [Key]),
+      Time_Now = erlang:system_time(second),
+      Reply = ets:select(table_cache, ets:fun2ms(fun({Key_, Value, T_Life, T_Born})
+        when Key_ =:= Key
+          andalso Time_Now - T_Born =< T_Life ->
+          {ok, Value} end)),
+  {reply, Reply, State};
+
+handle_call({read_by_date, {Date_from, Date_to}}, _From, State) ->
+  io:format("Read table by Date_from: ~p to Date_to: ~p~n", [Date_from, Date_to]),
+  Date_from_convert = convert_DateTime_to_second(Date_from),
+  Date_to_convert = convert_DateTime_to_second(Date_to),
+  Reply = ets:select(table_cache, ets:fun2ms(fun({_Key, _Value, T_Life, T_Born})
+    when T_Born >= Date_from_convert
+    andalso T_Born =< Date_to_convert ->
+    ok end)),
+  {reply, Reply, State};
+
+handle_call(terminate, _From, State) ->
+  {stop, normal, ok, State};
+
+handle_call(Msg, _From, State) ->
+  io:format("Unexpected message in handle_call ~p~n", [Msg]),
+  {reply, Msg, State}.
+
+handle_cast({create}, State) ->
   io:format("Create table~n"),
   ets:new(table_cache, [bag, public, named_table]),
-  {reply, ok, []};
+  {noreply, State};
 
-handle_call({add, {Key, Value, T_Life}}, _From, []) ->
-  io:format("Adds ~p into table~n", [{Key, Value, T_Life}]),
-      ets:insert(table_cache, {Key, Value, T_Life, erlang:timestamp()}),
-  {reply, ok, []};
+handle_cast(Msg, State) ->
+  io:format("Unexpected message in handle_cast ~p~n", [Msg]),
+  {noreply, State}.
 
-handle_call({remove, Key}, _From, []) ->
-  {Reply} =
-        case ets:delete(table_cache, Key) of
-          true -> {ok};
-          [] -> {error, not_exist}
-        end,
-  {reply, Reply, []};
-
-handle_call({remove_per_time}, _From, []) ->
+handle_info({timeout, _Ref, drop_interval}, State = #{period := Drop_Interval}) ->
+  erlang:start_timer(Drop_Interval*1000, self(), drop_interval),
   delete_obsolete(),
-  {reply, ok, []};
+  {noreply, State};
 
-handle_call({read, Key}, _From, []) ->
-  io:format("Read table, key: ~p~n", [Key]),
-      Time_Now = time_now(),
-      Reply = ets:select(table_cache, ets:fun2ms(fun({Key_, Value_, T_Life_, {MegaSec,Sec,_}})
-        when Key_ =:= Key
-          andalso Time_Now - (MegaSec * 1000000 + Sec) =< T_Life_ ->
-          {ok, Value_} end)),
-  {reply, Reply, []};
+handle_info(Msg, State) ->
+  io:format("Unexpected message in handle_info ~p~n", [Msg]),
+  {noreply, State}.
 
-handle_call(terminate, _From, []) ->
-  {stop, normal, ok, []}.
-
-handle_cast({remove_periodic_per_time, Drop_Interval}, []) ->
-  timer:apply_interval(Drop_Interval*1000, ?MODULE, delete_obsolete, []),
-  {noreply, []}.
-
-handle_info(Msg, []) ->
-  io:format("Unexpected message ~p~n", [Msg]),
-  {noreply, []}.
-
-terminate(normal, []) ->
-  [io:format("work with the server has finished~n")],
+terminate(normal, State) ->
+  io:format("work with the server has finished ~p~n",[State]),
   ok.
 
-
-time_now() ->
-  {MegaSecNow,SecNow,_MicroSecNow} = erlang:timestamp(),
-  MegaSecNow * 1000000 + SecNow.
-
 delete_obsolete() ->
-  Time_Now = time_now(),
-  ets:select_delete(table_cache, ets:fun2ms(fun({_, _, T_Life, {MegaSec,Sec,_}})
-    when Time_Now - (MegaSec * 1000000 + Sec) > T_Life -> true end)),
+  Time_Now = erlang:system_time(second),
+  ets:select_delete(table_cache, ets:fun2ms(fun({_, _, T_Life, T_Born})
+    when Time_Now - T_Born > T_Life -> true end)),
   io:format("delete overdue items~n").
+
+convert_DateTime_to_second(Date) ->
+  Date_Universal = erlang:localtime_to_universaltime(Date),
+  calendar:datetime_to_gregorian_seconds(Date_Universal) - 62167219200.
 
 
 
