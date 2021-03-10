@@ -77,10 +77,10 @@ handle_call({read_by_date, {Date_from, Date_to}}, _From, State) ->
   io:format("Read table by Date_from: ~p to Date_to: ~p~n", [Date_from, Date_to]),
   Date_from_convert = convert_DateTime_to_second(Date_from),
   Date_to_convert = convert_DateTime_to_second(Date_to),
-  Reply = ets:select(table_cache, ets:fun2ms(fun({_Key, _Value, T_Life, T_Born})
+  Reply = ets:select(table_cache, ets:fun2ms(fun({Key, Value, _T_Life, T_Born})
     when T_Born >= Date_from_convert
     andalso T_Born =< Date_to_convert ->
-    ok end)),
+    {ok, [Key, Value]} end)),
   {reply, Reply, State};
 
 handle_call(terminate, _From, State) ->
